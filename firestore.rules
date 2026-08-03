@@ -1,0 +1,15 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 서버(Admin SDK)에서만 다루는 비공개 설정 (Gemini API 키 등) - 클라이언트는 절대 접근 불가
+    match /users/{uid}/settings/private {
+      allow read, write: if false;
+    }
+
+    // 그 외 본인 데이터는 로그인한 본인만 읽기/쓰기 가능
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
